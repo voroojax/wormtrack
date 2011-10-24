@@ -13,8 +13,8 @@ The operation of  WormTrack software relies on 2 basic principles:
 
 
 The current prototype is implemented completely in Perl and comes in 2 major, loosely coupled programs (modules):
-#1  arp_capture.pl is a front end, which is responsible for monitoring the physical network Interface for ARP traffic, decoding the packets, and inserting them into the database.
-#2 The wormtrack.pl is the analyze program,which retrieves the packet info from Database and analyzes it, assuming a threat is detected it would call the correct alert program – to send out an E-Mail to admin (for example).
+#  arp_capture.pl is a front end, which is responsible for monitoring the physical network Interface for ARP traffic, decoding the packets, and inserting them into the database.
+# The wormtrack.pl is the analyze program,which retrieves the packet info from Database and analyzes it, assuming a threat is detected it would call the correct alert program – to send out an E-Mail to admin (for example).
 
 The capture module is the simplest, it  basically does linear copy of arp packets from the wire into the  databases, in addition it perform auto detection of MAC addresses.
 Most hosts on the network, even if they don't attempt to connect to some other host on the same network, send out periodic arp gratuitous broadcasts, which allow other hosts to know the machine's IP and MAC address. One of the requirements of analyze module is to know which IP addresses are dead and which are online, this is the task of auto discover functional. This is the only active part of the system, that is: for destination IP addresses which never broadcast an ARP request (thus we don't know if they are alive) we send out an arp request ourselves. Thus, if they are alive, we would record their reply with a MAC address, as a gratuitous announcement, into the database.
