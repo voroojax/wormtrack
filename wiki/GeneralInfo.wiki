@@ -4,8 +4,8 @@ It attempts to do that WITHOUT having any type of privileged access to the netwo
 It also doesn't require constant updating of its signature engine as new threats are released, since it is based on detection of anomalous  activity, which all Worms that propagate through the network would exhibit, in order to survive and propagate efficiently.
 
 The operation of  WormTrack software relies on 2 basic principles:
-1. To communicate with a machine on a LAN the source host has to discovery the destination physical MAC address by broadcasting a (ARP Request) query to all nodes on the LAN.
-2. Most hosts on the LAN have a fairly predictable communication patterns such as destination peers, etc..
+  # To communicate with a machine on a LAN the source host has to discovery the destination physical MAC address by broadcasting a (ARP Request) query to all nodes on the LAN.
+  # Most hosts on the LAN have a fairly predictable communication patterns such as destination peers, etc..
 
 = Description of operation: =
 	A client trying to establish IP connection with a server on the local LAN first has to determine the MAC address for the destination IP address (assuming it can't be found in the ARP cache). The source host has to broadcast an ARP Request to all hosts on the network. This arp request would have full information of the source endpoint: IP and MAC address, and an Incomplete information of the  destination end point - just the IP address. This allows any host on the network to monitor those ARP solicitations, because they are broadcast (Destination Ethernet MAC address is set to all 0xFF). If there is a host with that destination address, it would reply directly (not broadcast) to the source host with it MAC address (ARP Reply). Thus simply by watching the ARP requests we can know 2 things: which host wants to communicate with which other host, and the source host MAC address. To underline, we are able accomplish all this completely  passively, and without any special access  to the network switch.
@@ -21,34 +21,34 @@ Most hosts on the network, even if they don't attempt to connect to some other h
 
 The analyze part of the software performs a number of functions:
 
-1. Load any configuration files which where updated.
-2. Load incidents from the database, and if any are closed, remove relevant items from the requests table (which were inserted before or at the closing time of the incident).
-3. Pull any latest arp requests from the database.
-4. Process the requests by adding each request to the chain, corresponding to its source IP. Thus, for any source IP we can pull out which destinations it ever attempted to communicate with. It also performs basic packet level analysis:  for example, is a MAC address know, or if the given request was made by NMAP scanner, it keeps the results of this pre-analysis in the chain items.
-5. Analyze all chains, for all sources to generate the score based on: 
-1. How many machines did the particular source attempted to communicate with, which are NOT in the peer list of that source host.
-2. How many requests did the source attempted, which where destined to a non existing machines.
-3. Calculate how fast the requests where made by the client.
-4. How many requests came from the client with an unknown MAC address, that is address not defined in the known hosts config file, assuming we are monitoring that condition.
-5. How many requests where made by suspected port scanner such as nmap.
-6. The result of above is a numeric score, which if surpasses a defined threshold, would result in creation of an incident record:
-1. Create database record of the incident, such as current score, IP address of the source.
-2. Create a human readable (for now, eventually it will be XML) file with incident's detailed information.
-7. The last step is to attempt to send out an alert, this is accomplishing by inspecting the alert configuration table, which has to columns: incident score and program to execute. Thus, we execute the alert script which is either on our level of the score or bellow. Thus if out table looks like this, score: 500 => email, 700 =>sms . Given an incident score of 600 would result only in email going out, incident score of 800 would cause email, as well as SMS text message being send out.
+  # Load any configuration files which where updated.
+  # Load incidents from the database, and if any are closed, remove relevant items from the requests table (which were inserted before or at the closing time of the incident).
+  # Pull any latest arp requests from the database.
+  # Process the requests by adding each request to the chain, corresponding to its source IP. Thus, for any source IP we can pull out which destinations it ever attempted to communicate with. It also performs basic packet level analysis:  for example, is a MAC address know, or if the given request was made by NMAP scanner, it keeps the results of this pre-analysis in the chain items.
+  # Analyze all chains, for all sources to generate the score based on: 
+    # How many machines did the particular source attempted to communicate with, which are NOT in the peer list of that source host.
+    # How many requests did the source attempted, which where destined to a non existing machines.
+    # Calculate how fast the requests where made by the client.
+    # How many requests came from the client with an unknown MAC address, that is address not defined in the known hosts config file, assuming we are monitoring that condition.
+    # How many requests where made by suspected port scanner such as nmap.
+  # The result of above is a numeric score, which if surpasses a defined threshold, would result in creation of an incident record:
+    # Create database record of the incident, such as current score, IP address of the source.
+    # Create a human readable (for now, eventually it will be XML) file with incident's detailed information.
+  # The last step is to attempt to send out an alert, this is accomplishing by inspecting the alert configuration table, which has to columns: incident score and program to execute. Thus, we execute the alert script which is either on our level of the score or bellow. Thus if out table looks like this, score: 500 => email, 700 =>sms . Given an incident score of 600 would result only in email going out, incident score of 800 would cause email, as well as SMS text message being send out.
 
 
 The general work flow and usage of the software is as follows:
-1. Set up of configuration files, the more information provided about the network the better
-1. Run the arp capture for some time to collect enough data,a few hours or a day on the network.
-2. set up a known hosts file: hostname =>IP,MAC address . IP could be a subnet. So if alex=>192.168.1.0/24,adff is defined. This would match for example 192.168.1.200 with mac adff11 . This permits more flexibility for networks with DHCP, where IP addresses might change but MAC is constant. However, it is better to specify a full IP addresses for hosts, especially since in practice, DHCP servers try to always issue IP address to a host which already had that address before.
-3. Specify the peer relationship, for example alex<=>printer, router;  assuming that “printer” and “router” are defined in known hosts file, this rule says that alex can talk to the printer,and to arouter, and also the router can talk to alex and printer can talk to alex. One can use a short hand like bob,alex<=>printer,router this is equivalent to:  alex<=>printer, router AND bob<=>printer, router
-4. Run the analyzer in test mode with -t parameter, inspect the logs, if incidents are not being created. In case incidents are being generated, we have to update the configuration files again, either peers or hosts. This is done until in testing mode analyzer will run relatively silent (assuming no malicious incidents on the network).
-5. Start the WormTrack without -t and wait for alerts,or run an nmap scan test to see that it is working.
+  # Set up of configuration files, the more information provided about the network the better
+    # Run the arp capture for some time to collect enough data,a few hours or a day on the network.
+    # set up a known hosts file: hostname =>IP,MAC address . IP could be a subnet. So if alex=>192.168.1.0/24,adff is defined. This would match for example 192.168.1.200 with mac adff11 . This permits more flexibility for networks with DHCP, where IP addresses might change but MAC is constant. However, it is better to specify a full IP addresses for hosts, especially since in practice, DHCP servers try to always issue IP address to a host which already had that address before.
+    # Specify the peer relationship, for example alex<=>printer, router;  assuming that “printer” and “router” are defined in known hosts file, this rule says that alex can talk to the printer,and to arouter, and also the router can talk to alex and printer can talk to alex. One can use a short hand like bob,alex<=>printer,router this is equivalent to:  alex<=>printer, router AND bob<=>printer, router
+    # Run the analyzer in test mode with -t parameter, inspect the logs, if incidents are not being created. In case incidents are being generated, we have to update the configuration files again, either peers or hosts. This is done until in testing mode analyzer will run relatively silent (assuming no malicious incidents on the network).
+    # Start the WormTrack without -t and wait for alerts,or run an nmap scan test to see that it is working.
 
-2. Receive incidents, respond to them. 
-1. If it is false positive update the config files accordingly.
-2. If its a malicious attack – remove the threat from the machine.
-3. Close the incident in the database (for now no UI is provided).
+  # Receive incidents, respond to them. 
+    # If it is false positive update the config files accordingly.
+    # If its a malicious attack – remove the threat from the machine.
+  # Close the incident in the database (for now no UI is provided).
 
 
 
@@ -56,10 +56,6 @@ Some points to consider: this software is a proof of concept prototype, designed
 
 Potential counter measures that an attacker can employ:
 If an attacker will limit himself only to host's peers, by either inspecting the host's ARP Cache, or monitoring the network for traffic, he would be able to fly “under the radar” since he would passively discover the network topology. In an effort to perform an attack, he must slowly target only the machines which are peers of his host, and he would remain undetected by WormTrack. However, in  practice this attack doesn’t represent any realistic threat, for the following reasons: the attacker, especially a worm, has no knowledge that the network is monitored by WormTrack, thus if he assumes it is, he would have to assume that for all other networks. However,  majority of which are not protected in any way! That will result in a worm being extremely slow and weak propagator, in general. It obvious that no rational malware author would cripple his worm in such a way. In addition, assuming secretary machine was infected: with peer map is as follows secretary<=>printer,DG,fax  , the worm would be limited to only attempt attacks against: printer,DG router,and fax - most of them are embedded devices, which would not be vulnerable to a typical Windows based worm. In other word by being careful, the worm limits the potential target pool significantly, and in such a way that it's ability to propagate becomes crippled. Again, no worm author would implement something like that.
-
-
-
-
 
 
 Lets say we have a bussiness network with an IP of 10.10.10.1-50
@@ -84,6 +80,7 @@ Developer3 10.10.10.13 mac:aecf0916
 Secretary 10.10.10.20 mac:eeff00
 
 Thus the known hosts file will look something like this:
+{{{
 network=>10.10.10.0/24
 gateway=>10.10.10.1,abcdef123
 Printer=>10.10.10.5,bcef789
@@ -95,7 +92,7 @@ Developer2=>10.10.10.12,aecf0913
 Developer3 => 10.10.10.13
 
 Secretary =>10.10.10.0/24,eeff00
-
+}}}
 We have just defined all known machines: and also the network itself: so assuming we are enforcing MAC addresses as specified in main config for this network. 
 The following are a few examples to better undertand how WormTrack will handle packets with different combinations of IP's and MAC's addresses:
 
@@ -109,30 +106,35 @@ Last example: Packet arrives from 10.10.10.13 and MAC address AAFF0033 will matc
 The peer configuration file defines which hosts (declared in the known hosts file) we expect to routinely talk to each other.
 
 Let us now try to come up with rules:
-1. Any machine on the network should be able to talk to the default gateway.
-2. Any machine should be able to talk to the printer.
-3. Developers should be able to talk to cvs server.
-4. Secretary should be able to talk to the file server.
+  # Any machine on the network should be able to talk to the default gateway.
+  # Any machine should be able to talk to the printer.
+  # Developers should be able to talk to cvs server.
+  # Secretary should be able to talk to the file server.
 In this version of the software we assume two-way communication: so if we allow secretary to talk to the printer we assume that its also ok for printer to talk to the secretary machine, that is send an ARP request to it.
 
 From above we able to come up with possible config file:
+{{{
 network<=>gateway,printer #anybody can talk to printer and DG
 Developer1,Developer2,Developer3<=>cvs
 Secretary<=>file-server
+}}}
 
 
 Some notes on the general config file syntax:
 All items are case insensitive.
 Comments are specified with “#” pound sign on the line, everything after that is ignored.
 Spaces are ignored between items:
-
+{{{
 Secretary<=>file-server
-
+}}}
 is same as
-
+{{{
 Secretary       <=>        file-server #hh
+}}}
 but NOT:
+{{{
 Secretary< = >file-server
+}}}
 
 All config files have a basic structure of
 Right side possibly delimited by commas (<=> OR => OR = depending on context) Left side possibly delimited by commas.
