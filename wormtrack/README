@@ -25,7 +25,11 @@ Time::Format
 insert DB schema for MySQL and make sure you have arpmon user set up to read write to from it
 one can modify the user and password later in config files
 
+sendAlert.sh is sample alert emailing scipt, please edit it for your enviroment: e-mail address,incident directory,etc..
+
 Sample Command Line description:
+
+one can always use -h flag in a command to get help on all options
 
 to capture:
 ./arp_capture.pl -P /root/db_user.txt -A 10 -I 1.1.1.1 -i eth0 -c DBI:mysql:arpcap -u root -d cap.pid
