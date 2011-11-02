@@ -1,1 +1,39 @@
-Command Line description:
+Basic Install and use of WormTrack
+
+Please make sure your system has the following modules, you can install them with
+perl -MCPAN -e shell
+
+then run 'install module_name'
+Net::PcapUtils
+NetPacket::Ethernet
+NetPacket::ARP
+Socket
+use strict
+DBI
+Cwd
+Net::ARP
+Getopt::Std
+Proc::Daemon
+Privileges::Drop
+Log::Log4perl
+use Net::IP
+use Switch
+use Carp
+Time::Format_XS
+Time::Format
+
+insert DB schema for MySQL and make sure you have arpmon user set up to read write to from it
+one can modify the user and password later in config files
+
+Sample Command Line description:
+
+to capture:
+./arp_capture.pl -P /root/db_user.txt -A 10 -I 1.1.1.1 -i eth0 -c DBI:mysql:arpcap -u root -d cap.pid
+
+that will run in daemon mode,using db_user.txt credetials to access DB, and have AudtoDiscovery enabled,
+one can set a diffrent user to run as, however it has to be root for AutoDoscovery to work.
+
+to  track worms:
+./wormtrack.pl -c main_config.txt -d track.pid
+
+run as daemon,and use a particular config file for all it config stuff.
