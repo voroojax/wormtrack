@@ -43,3 +43,16 @@ to  track worms:
 run as daemon,and use a particular config file for all it config stuff.
 
 Files Included:
+
+arp_capture.pl -a- arp captute module,collects arps on the network,insterts in DB
+host_peers.txt   - Peer configuration,which host can communicate with which other host
+mysql_db_schema.sql  - basic schema,just 2 tables for the system
+track_log.conf - configuration of log4perl for wormtrack.pl
+capture_log.conf  - configuration of logging for arp capture
+known_hosts.txt  - Configuration of known hosts
+README     - This file          
+wormtrack.pl - the WormTrack itself
+db_user.txt  - username and password for DB access of arp_capture.pl module     
+main_config.txt  - Main configuration file for wormtrack.pl
+sendAlert.sh  - Email Alerting
+
