@@ -142,3 +142,5 @@ Secretary< = >file-server
 
 All config files have a basic structure of
 Right side possibly delimited by commas (<=> OR => OR = depending on context) Left side possibly delimited by commas.
+
+If your network contains a number of MS Windows machines please read [WindowsFalsePositives]
